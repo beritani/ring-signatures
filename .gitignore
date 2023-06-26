@@ -1,0 +1,5 @@
+# Dev
+node_modules/
+
+# Build Dir
+build/
