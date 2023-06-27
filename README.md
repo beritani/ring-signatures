@@ -48,8 +48,8 @@ const sagSig = SAG.sign(msg, privateKey, ring, secretIndex);
 const sagValid = SAG.verify(sagSig, msg, ring);
 
 // bLSAG Signature and Key Image
-const { sig: blsagSig, keyImage } = bLSAGsign(msg, privateKey, ring, index);
-const blsagValid = verify(blsagSig, msg, ring, keyImage);
+const { sig: blsagSig, keyImage } = bLSAG.sign(msg, privateKey, ring, secretIndex);
+const blsagValid = bLSAG.verify(blsagSig, msg, ring, keyImage);
 ```
 
 ## Resources
