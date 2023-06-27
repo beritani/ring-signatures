@@ -56,6 +56,7 @@ const blsagValid = bLSAG.verify(blsagSig, msg, ring, keyImage);
 
 - Elliptic Curves - https://paulmillr.com/posts/noble-secp256k1-fast-ecc/
 - Ring Signatures - https://medium.com/asecuritysite-when-bob-met-alice/ring-signatures-and-anonymisation-c9640f08a193
+- Ring Signatures - https://www.moneroinflation.com/ring_signatures
 - Monero - https://www.getmonero.org/library/Zero-to-Monero-2-0-0.pdf
 
 ## Attribution
