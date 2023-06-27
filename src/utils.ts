@@ -2,6 +2,7 @@ import { ed25519 as ed } from "@noble/curves/ed25519";
 import { bytesToNumberLE } from "@noble/curves/abstract/utils";
 import { keccak_256 } from "@noble/hashes/sha3";
 import { mod } from "@noble/curves/abstract/modular";
+import { ExtPointType } from "@noble/curves/abstract/edwards";
 
 export type Bytes = Uint8Array;
 
@@ -105,6 +106,17 @@ export const hashToPoint = (hash: Bytes) => {
 
   const P = ed.ExtendedPoint.fromAffine({ x, y });
   return P.multiply(8n);
+};
+
+export const verifyKeyImage = (keyImage: ExtPointType) => {
+  const I = ed.ExtendedPoint.ZERO;
+  let p = I;
+  let n = ed.CURVE.n;
+  for (let d = keyImage; n > 0n; d = d.double(), n >>= 1n) {
+    // double-and-add ladder
+    if (n & 1n) p = p.add(d);
+  }
+  return p.equals(I);
 };
 
 export const keccak = (...msgs: Bytes[]) => {
