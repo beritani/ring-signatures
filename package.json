@@ -1,6 +1,6 @@
 {
   "name": "ring-signatures",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Pure JavaScript Ring Signatures",
   "files": [
     "*.js",
@@ -16,7 +16,7 @@
     "type": "git"
   },
   "scripts": {
-    "test": "jest",
+    "test": "jest --maxWorkers=1",
     "build": "tsc",
     "build:clean": "rm *.{js,d.ts,d.ts.map} 2>/dev/null || true",
     "lint": "prettier --check 'src/**/*.{js,ts}'",
@@ -25,7 +25,15 @@
   },
   "jest": {
     "preset": "ts-jest",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "transform": {
+      "^.+\\.tsx?$": [
+        "ts-jest",
+        {
+          "isolatedModules": true
+        }
+      ]
+    }
   },
   "publishConfig": {
     "ignore": [
