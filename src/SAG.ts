@@ -6,12 +6,7 @@ const { G } = params;
 
 // Spontaneous Anonymous Group (SAG) signatures
 
-export const sign = (
-  msg: Bytes,
-  prvKey: Bytes,
-  ring: Bytes[],
-  index: number
-) => {
+export const sign = (msg: Bytes, prvKey: Bytes, ring: Bytes[], index: number) => {
   const R = new Array<bigint>(ring.length); // Random Values
   const C = new Array<bigint>(ring.length); // Challenge
   const { scalar: k } = ed.utils.getExtendedPublicKey(prvKey);
@@ -27,18 +22,13 @@ export const sign = (
     const K = ed.ExtendedPoint.fromHex(ring[i]);
     const rG_cK = rG.add(K.multiply(C[i]));
     R[i] = mod_N(r);
-    C[(i + 1) % ring.length] = mod_N_LE(
-      keccak(...ring, msg, rG_cK.toRawBytes())
-    );
+    C[(i + 1) % ring.length] = mod_N_LE(keccak(...ring, msg, rG_cK.toRawBytes()));
   }
 
   R[index] = mod_N(a - C[index] * k);
 
   // Return Challenge and Random Scalars
-  return concatBytes(
-    numberToBytesLE(C[0], 32),
-    ...R.map((val) => numberToBytesLE(val, 32))
-  );
+  return concatBytes(numberToBytesLE(C[0], 32), ...R.map((val) => numberToBytesLE(val, 32)));
 };
 
 export const verify = (sig: Bytes, msg: Bytes, ring: Bytes[]) => {
@@ -54,9 +44,7 @@ export const verify = (sig: Bytes, msg: Bytes, ring: Bytes[]) => {
   for (let i = 0; i < ring.length; i++) {
     const K = ed.ExtendedPoint.fromHex(ring[i]);
     const rG_cK = G.multiply(R[i]).add(K.multiply(C[i]));
-    C[(i + 1) % ring.length] = mod_N_LE(
-      keccak(...ring, msg, rG_cK.toRawBytes())
-    );
+    C[(i + 1) % ring.length] = mod_N_LE(keccak(...ring, msg, rG_cK.toRawBytes()));
   }
 
   return c == C[0];

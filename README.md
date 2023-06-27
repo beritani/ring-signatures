@@ -15,6 +15,38 @@ Types of ring signatures:
 - MLSAG (Multilayer Linkable Spontaneous Anonymous Group)
 - CLSAG (Concise Linkable Spontaneous Anonymous Group)
 
+## Usage
+
+```ts
+import { ed25519 as ed } from "@noble/curves/ed25519";
+import { sign, verify } from "ring-signatures/SAG";
+import { Bytes } from "ring-signatures/utils";
+
+// Create Message and Key Pair
+const msg = new TextEncoder().encode("Hello World!");
+const privateKey = ed.utils.randomPrivateKey();
+const publicKey = ed.getPublicKey(prvKey);
+
+// Create Ring
+const secretIndex = 2;
+const ringLength = 10;
+
+const ring = new Array<Bytes>(ringLength);
+for (let i = 0; i < ringLength; i++) {
+  // Create Random Public Keys for Testing
+  ring[i] = ed.getPublicKey(ed.utils.randomPrivateKey());
+}
+
+// Set Public Key
+ring[secretIndex] = publicKey;
+
+// Create Signature
+const sig = sign(msg, privateKey, ring, secretIndex);
+
+// Verify Ring Signature
+const valid = verify(sig, msg, ring);
+```
+
 ## Resources
 
 - Elliptic Curves - https://paulmillr.com/posts/noble-secp256k1-fast-ecc/

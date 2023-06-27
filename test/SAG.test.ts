@@ -8,9 +8,11 @@ describe("sign and verify", () => {
   const pubKey = ed.getPublicKey(prvKey);
 
   const msg = new TextEncoder().encode("Hello World!");
-  const ring = new Array<Bytes>(10)
-    .fill(new Uint8Array())
-    .map(() => ed.getPublicKey(ed.utils.randomPrivateKey()));
+
+  const ring: Bytes[] = [];
+  for (let i = 0; i < 10; i++) {
+    ring.push(ed.getPublicKey(ed.utils.randomPrivateKey()));
+  }
 
   test("valid signature", () => {
     ring[index] = pubKey;
@@ -19,7 +21,13 @@ describe("sign and verify", () => {
     expect(valid).toBeTruthy();
   });
 
-  test("invalid signature", () => {
+  test("invalid index", () => {
+    const sig = sign(msg, prvKey, ring, 5);
+    const invalid = verify(sig, msg, ring);
+    expect(invalid).toBeFalsy();
+  });
+
+  test("invalid ring", () => {
     ring[index] = ed.getPublicKey(ed.utils.randomPrivateKey());
     const sig = sign(msg, prvKey, ring, index);
     const invalid = verify(sig, msg, ring);
