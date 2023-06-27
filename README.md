@@ -17,15 +17,18 @@ Types of ring signatures:
 
 ## Usage
 
+### SAG & bLSAG
+
 ```ts
 import { ed25519 as ed } from "@noble/curves/ed25519";
-import { sign, verify } from "ring-signatures/SAG";
+import * as SAG from "ring-signatures/SAG";
+import * as bLSAG from "ring-signatures/bLSAG";
 import { Bytes } from "ring-signatures/utils";
 
 // Create Message and Key Pair
 const msg = new TextEncoder().encode("Hello World!");
 const privateKey = ed.utils.randomPrivateKey();
-const publicKey = ed.getPublicKey(prvKey);
+const publicKey = ed.getPublicKey(privateKey);
 
 // Create Ring
 const secretIndex = 2;
@@ -40,11 +43,13 @@ for (let i = 0; i < ringLength; i++) {
 // Set Public Key
 ring[secretIndex] = publicKey;
 
-// Create Signature
-const sig = sign(msg, privateKey, ring, secretIndex);
+// SAG Signature
+const sagSig = SAG.sign(msg, privateKey, ring, secretIndex);
+const sagValid = SAG.verify(sagSig, msg, ring);
 
-// Verify Ring Signature
-const valid = verify(sig, msg, ring);
+// bLSAG Signature and Key Image
+const { sig: blsagSig, keyImage } = bLSAGsign(msg, privateKey, ring, index);
+const blsagValid = verify(blsagSig, msg, ring, keyImage);
 ```
 
 ## Resources
