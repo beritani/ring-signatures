@@ -42,67 +42,73 @@ export const randomPoint = () => {
 // Also See - Rational Points on Certain Hyperellipti Curves over Finite Fields (Maiej Ulas)
 export const hashToPoint = (hash: Bytes) => {
   const mod = mod_P;
-  const mul = C.Fp.mul;
+  const mul = (...x: bigint[]) => x.reduce((lhs, rhs) => C.Fp.mul(lhs, rhs), 1n);
   const sqrt = C.Fp.sqrt;
   const neg = C.Fp.neg;
   const inv = C.Fp.inv;
+  const pow = C.Fp.pow;
+  const add = C.Fp.add;
+  const sub = C.Fp.sub;
+
   const A = 486662n;
-
+  const A2 = pow(A, 2n);
   const u = mod(bytesToNumberLE(hash));
+  const u2 = pow(u, 2n);
   const sqrtm1 = sqrt(neg(C.Fp.ONE));
-  const w = mod(2n * u * u + 1n);
-  const xp = mod(w * w - 2n * A * A * u * u);
+  const w = mod(mul(2n, u2) + 1n);
+  const w2 = pow(w, 2n);
+  const xp = sub(w2, mul(2n, A2, u2));
 
-  let uv = C.uvRatio!(w, xp); // TODO - Check Result
+  let uv = C.uvRatio!(w, xp);
   let rx = uv.value;
 
   let z;
-  let x = mod(rx * rx * (w * w - 2n * A * A * u * u));
-  let y = mod(2n * u * u + 1n - x);
-  let sign;
+  let x = mul(pow(rx, 2n), sub(w2, mul(2n, A2, u2)));
+  let y = mod(mul(2n, u2) + 1n - x);
 
+  let sign;
   let negative = false;
 
   if (y != 0n) {
-    y = mod(w + x);
+    y = add(w, x);
     if (y != 0n) {
       negative = true;
     } else {
-      rx = mod(rx * -1n * sqrt(-2n * A * (A + 2n)));
+      rx = mul(rx, -1n, sqrt(mul(-2n, A, A + 2n)));
       negative = false;
     }
   } else {
-    rx = rx * -1n * sqrt(2n * A * (A + 2n));
+    rx = mul(rx, -1n, sqrt(mul(2n, A, A + 2n)));
   }
 
   if (!negative) {
-    rx = mod(rx * u);
-    z = mod(-2n * A * u * u);
+    rx = mul(rx, u);
+    z = mul(-2n, A, u2);
     sign = 0n;
   } else {
-    z = mod(-1n * A);
-    x = mod(x * sqrtm1);
-    y = mod(w - x);
+    z = mul(-1n, A);
+    x = mul(x, sqrtm1);
+    y = sub(w, x);
 
     if (y != 0n) {
-      rx = mod(rx * sqrt(-1n * sqrtm1 * A * (A + 2n)));
+      rx = mul(rx, sqrt(mul(-1n, sqrtm1, A, A + 2n)));
     } else {
-      rx = mod(rx * -1n * sqrt(mul(mul(sqrtm1, A), A + 2n)));
+      rx = mul(rx, -1n, sqrt(mul(sqrtm1, A, A + 2n)));
     }
     sign = 1;
   }
 
   if (mod_2(rx) != sign) {
-    rx = mod(-rx);
+    rx = neg(rx);
   }
 
-  let rz = mod(z + w);
-  let ry = mod(z - w);
-  rx = mod(rx * rz);
+  let rz = add(z, w);
+  let ry = sub(z, w);
+  rx = mul(rx, rz);
 
   const zinv = inv(rz);
-  x = mod(rx * zinv);
-  y = mod(ry * zinv);
+  x = mul(rx, zinv);
+  y = mul(ry, zinv);
 
   const P = ed.ExtendedPoint.fromAffine({ x, y });
   return P.multiply(8n);
