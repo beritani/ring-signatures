@@ -52,6 +52,42 @@ const { sig: blsagSig, keyImage } = bLSAG.sign(msg, privateKey, ring, secretInde
 const blsagValid = bLSAG.verify(blsagSig, msg, ring, keyImage);
 ```
 
+### MLSAG
+
+```ts
+import { ed25519 as ed } from "@noble/curves/ed25519";
+import * as MLSAG from "ring-signatures/MLSAG";
+import { Bytes } from "ring-signatures/utils";
+
+// Create Message and Key Pairs
+const msg = new TextEncoder().encode("Hello World!");
+
+const privateKeys: Bytes[] = [];
+for (let j = 0; j < 5; j++) {
+  privateKeys.push(ed.utils.randomPrivateKey());
+}
+const publicKeys = privateKeys.map((k) => ed.getPublicKey(k));
+
+// Create Ring
+const secretIndex = 2;
+const ringLength = 10;
+
+const ring: Bytes[][] = [];
+for (let i = 0; i < ringLength; i++) {
+  ring[i] = [];
+  for (let j = 0; j < privateKeys.length; j++) {
+    ring[i].push(ed.getPublicKey(ed.utils.randomPrivateKey()));
+  }
+}
+
+// Set Public Key
+ring[secretIndex] = publicKeys;
+
+// MLSAG Signature
+const { sig, keyImages } = MLSAG.sign(msg, privateKeys, ring, secretIndex);
+const valid = MLSAG.verify(sig, msg, ring, keyImages);
+```
+
 ## Resources
 
 - Elliptic Curves - https://paulmillr.com/posts/noble-secp256k1-fast-ecc/
